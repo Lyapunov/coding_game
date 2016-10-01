@@ -174,7 +174,7 @@ private:
 class DfsPredictor
 {
 public:
-    DfsPredictor( const State& state ) : state_( state ) {
+    DfsPredictor( const State& state, bool maxi = false ) : state_( state ), maxi_( maxi ) {
         actions_.reserve(128);
         dfs_search( state );
     }
@@ -189,6 +189,9 @@ private:
             }
             cerr << "=== dfs_search, " << state.alive() << " ";
             state.debug_print( cerr );
+        }
+        if ( maxi_ && state.alive() < 4 ) {
+            return false;
         }
         
         if ( !state.valid() ) {
@@ -207,6 +210,7 @@ private:
         return false;
     }
     State state_;
+    bool maxi_;
     std::vector<Action> actions_;
 };
 
@@ -246,7 +250,9 @@ int main()
         race_track.push_back( 0 );
     }
     
-    debugPrintTrack( cerr );
+    if ( DEBUG ) {
+       debugPrintTrack( cerr );
+    }
     
     // game loop
     while (1) {
@@ -287,8 +293,13 @@ int main()
         
         if ( !game_state.get() ) {
             game_state.reset( new State( iState ) );
-            game_state->debug_print( cerr );
-            dfsp.reset( new DfsPredictor( *game_state ) );
+            if ( DEBUG ) {
+               game_state->debug_print( cerr );
+            }
+            dfsp.reset( new DfsPredictor( *game_state, true ) );
+            if ( dfsp->get_actions().empty() ) {
+                dfsp.reset( new DfsPredictor( *game_state ) );
+            }
             if ( DEBUG ) {
                debugPrint( cerr, dfsp->get_actions() );
             }
