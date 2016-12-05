@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 class Node
     def initialize()
         @children = Hash.new
